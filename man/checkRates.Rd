@@ -4,7 +4,7 @@
 \alias{checkRates}
 \title{Check Rates}
 \usage{
-checkRates(time, Q, R, D, kappaFun, lambdaFun, kappa, lambda, dt = 1/24)
+checkRates(time, Q, R, D, kappaFun, lambdaFun, kappa, lambda, dt = 1)
 }
 \arguments{
 \item{time}{time vector}
@@ -29,7 +29,7 @@ checkRates(time, Q, R, D, kappaFun, lambdaFun, kappa, lambda, dt = 1/24)
 plots for death rate and recovery rate
 }
 \description{
-This function compares the fitted and calcualted death and recovered ratios.
+This function compares the fitted and calculated death and recovered ratios.
 The idea is to check whether the approximation of these ratios is appropriate.
 }
 \references{

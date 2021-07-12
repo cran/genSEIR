@@ -7,7 +7,7 @@
 RK4(Y, A, K, dt)
 }
 \arguments{
-\item{Y}{time vector}
+\item{Y}{initial values for seven states}
 
 \item{A}{the matrix A that is found in: dY/dt = A*Y + F}
 
@@ -16,7 +16,7 @@ RK4(Y, A, K, dt)
 \item{dt}{the time step. This oversamples time to ensure that the algorithm converges}
 }
 \value{
-ordinary differential equation result as a vector
+ordinary differential equation result for the seven states
 }
 \description{
 Runge-Kutta 4th Order Method to Solve Differential Equation

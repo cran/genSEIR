@@ -60,7 +60,7 @@ SEIQRDP(
 
 \item{dt}{the time step. This oversamples time to ensure that the algorithm converges}
 
-\item{f}{future predictions}
+\item{f}{number of days for future predictions}
 }
 \value{
 a list of predicted cases including susceptible, exposed,  infectious, quarantined, recovered, dead and insusceptible.
@@ -100,12 +100,16 @@ if(nrow(Recovered) == 1){
   lambda_guess = c(0.01,0.001,10)
   kappa_guess = c(0.001,0.001,10)
 
-  guess = c(alpha_guess,
+guess = list(alpha_guess,
             beta_guess,
             1/LT_guess,
             Q_guess,
-            lambda_guess,
-            kappa_guess)
+            lambda_guess[1],
+            lambda_guess[2],
+            lambda_guess[3],
+            kappa_guess[1],
+            kappa_guess[2],
+            kappa_guess[3])
 
  Q0 = confirmed[1]-recovered[1]-deaths[1]
  I0 = 0.3*Q0
@@ -129,7 +133,8 @@ if(nrow(Recovered) == 1){
 
  res = SEIQRDP(alpha = params$alpha1, beta = params$beta1,
                gamma = params$gamma1, delta = params$delta1,
-               lambda0 = params$Lambda1, kappa0 = params$Kappa1,
+               lambda0 = c(params$lambda01, params$lambda02, params$lambda03),
+               kappa0 = c(params$kappa01, params$kappa02, params$kappa03),
                Npop, E0, I0, Q0, R0, D0,lambdaFun = params$lambdaFun,
                kappaFun = params$kappaFun, tstart = start, tfinish = finish,
                dt = dt, f =f)

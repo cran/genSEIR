@@ -1,13 +1,13 @@
 #' Runge-Kutta 4th Order Method to Solve Differential Equation
 #'
-#' @param Y time vector
+#' @param Y initial values for seven states
 #' @param A the matrix A that is found in: dY/dt = A*Y + F
 #' @param K the zero matrix for the seven states
 #' @param dt the time step. This oversamples time to ensure that the algorithm converges
 #'
 #' @author Selcuk Korkmaz, \email{selcukorkmaz@gmail.com}
 #'
-#' @return ordinary differential equation result as a vector
+#' @return ordinary differential equation result for the seven states
 #'
 #' @seealso \code{\link{SEIQRDP}} \code{\link{fit_SEIQRDP}}
 #'

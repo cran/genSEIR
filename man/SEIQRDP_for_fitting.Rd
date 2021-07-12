@@ -4,7 +4,7 @@
 \alias{SEIQRDP_for_fitting}
 \title{Fitted Results for SEIQRDP}
 \usage{
-SEIQRDP_for_fitting(par, t, t0)
+SEIQRDP_for_fitting(par, t, t0, Npop, E0, I0, Q, R, D, dt)
 }
 \arguments{
 \item{par}{initial guess parameters}
@@ -12,6 +12,20 @@ SEIQRDP_for_fitting(par, t, t0)
 \item{t}{historical time vector}
 
 \item{t0}{target time vector}
+
+\item{Npop}{total population of the country}
+
+\item{E0}{initial number of exposed cases}
+
+\item{I0}{initial number of infectious cases}
+
+\item{Q}{actual number of quarantined cases}
+
+\item{R}{actual number of recovered cases}
+
+\item{D}{actual number of dead cases}
+
+\item{dt}{the time step. This oversamples time to ensure that the algorithm converges}
 }
 \value{
 a data frame for fitted quarantined, recovered and deaths

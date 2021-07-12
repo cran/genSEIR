@@ -12,15 +12,17 @@ fit_SEIQRDP(
   E0,
   I0,
   time,
+  alpha = 0.05,
   dt = 1/24,
   guess,
-  ftol = 1e-06,
-  ptol = 1e-06,
-  gtol = 1e-06,
-  epsfcn = 0.001,
+  ftol = sqrt(.Machine$double.eps),
+  ptol = sqrt(.Machine$double.eps),
+  gtol = 0,
+  diag = list(),
+  epsfcn = 0,
   factor = 100,
-  maxfev = 1000,
-  maxiter = 100,
+  maxfev = integer(),
+  maxiter = 1000,
   nprint = 1,
   trace = TRUE,
   ...
@@ -41,6 +43,8 @@ fit_SEIQRDP(
 
 \item{time}{a time vector}
 
+\item{alpha}{type I error rate, default is 0.05}
+
 \item{dt}{the time step. This oversamples time to ensure that the algorithm converges}
 
 \item{guess}{initial guess parameters}
@@ -50,6 +54,9 @@ fit_SEIQRDP(
 \item{ptol}{nls.lm.control object. non-negative numeric. Default is \code{1e-6}}
 
 \item{gtol}{nls.lm.control object. non-negative numeric. Default is \code{1e-6}}
+
+\item{diag}{nls.lm.control object. a list or numeric vector containing positive
+entries that serve as multiplicative scale factors for the parameters.}
 
 \item{epsfcn}{nls.lm.control object. Default is \code{0.001}}
 
@@ -104,12 +111,16 @@ if(nrow(Recovered) == 1){
   lambda_guess = c(0.01,0.001,10)
   kappa_guess = c(0.001,0.001,10)
 
-  guess = c(alpha_guess,
+guess = list(alpha_guess,
             beta_guess,
             1/LT_guess,
             Q_guess,
-            lambda_guess,
-            kappa_guess)
+            lambda_guess[1],
+            lambda_guess[2],
+            lambda_guess[3],
+            kappa_guess[1],
+            kappa_guess[2],
+            kappa_guess[3])
 
  Q0 = confirmed[1]-recovered[1]-deaths[1]
  I0 = 0.3*Q0
@@ -127,9 +138,9 @@ if(nrow(Recovered) == 1){
  time = seq(as.Date(start, format = "\%m/\%d/\%y"), as.Date(finish, format = "\%m/\%d/\%y"), by = "1 day")
 
  params = fit_SEIQRDP(Q = Active, R = recovered, D = deaths, Npop = Npop, E0 = E0, I0 = I0,
-                        time = time, dt = dt, guess = guess, ftol = 1e-6, ptol = 1e-6, gtol = 1e-6,
-                        epsfcn = 0.001, factor = 100, maxfev = 1000,maxiter = 100, nprint = 1,
-                        trace = TRUE)
+                        time = time, alpha = 0.05, dt = dt, guess = guess, ftol = 1e-6,
+                        ptol = 1e-6, gtol = 1e-6, epsfcn = 0.001, factor = 100, maxfev = 1000,
+                        maxiter = 100, nprint = 1, trace = TRUE)
 }
 }
 \references{
@@ -138,7 +149,7 @@ Peng, L., Yang, W., Zhang, D., Zhuge, C., Hong, L. 2020. “Epidemic analysis of
 \url{https://www.mathworks.com/matlabcentral/fileexchange/74545-generalized-seir-epidemic-model-fitting-and-computation}
 }
 \seealso{
-\code{\link{SEIQRDP}} \code{\link{fit_SEIQRDP}}
+\code{\link{SEIQRDP}} \code{\link{predict_SEIQRDP}}
 }
 \author{
 Selcuk Korkmaz, \email{selcukorkmaz@gmail.com}

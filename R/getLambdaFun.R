@@ -1,12 +1,12 @@
-#' Estimate Death Rate
+#' Estimate Recovery Rate
 #'
-#' This function provides a first estimate of the  recovery rate, to faciliate
+#' This function provides a first estimate of the recovery rate, to faciliate
 #' convergence of the main algorithm.
 
 #' @param tTarget target time vector
 #' @param Q target time-histories of the quarantined cases
 #' @param R target time-histories of the recovered cases
-#' @param guess Initiail guess parameters for kappa
+#' @param guess initial guess parameters for kappa
 #' @param ftol nls.lm.control object. non-negative numeric. Default is \code{1e-6}
 #' @param ptol nls.lm.control object. non-negative numeric. Default is \code{1e-6}
 #' @param gtol nls.lm.control object. non-negative numeric. Default is \code{1e-6}
@@ -47,20 +47,20 @@ getLambdaFun <- function (tTarget, Q, R, guess, ftol,
   df = cbind.data.frame(tk = x[!is.na(rate)], z = rate[!is.na(rate)])
 
 
-  ctrl = list(phi=1, lamda = 0.0087, offset = 100, laminc=10, lamdec = 4)
+  ctrl = list(phi=1, lamda = 0.0001, offset = 100, laminc=10, lamdec = 4)
 
   model1 <- nlxb(z ~ a1 / (1+exp(-a2*(tk-a3))),
-                  start=list(a1=guess[5], a2=guess[6], a3=guess[7]), data=df, trace=trace,
+                  start=list(a1=guess[[5]], a2=guess[[6]], a3=guess[[7]]), data=df, trace=trace,
                  control = ctrl, lower = c(0,0,0), upper = c(1,1,100))
 
   coeff1 = model1$coefficients
   r1 = model1$ssquares
 
-  ctrl = list(phi=1, lamda = 0.0087, offset = 100, laminc=10, lamdec = 4)
+  ctrl = list(phi=1, lamda = 0.0001, offset = 100, laminc=10, lamdec = 4)
 
 
   model2 <- nlxb(z ~ a1 + exp(-a2*(tk+a3)),
-                  start=list(a1=guess[5], a2=guess[6], a3=guess[7]), data=df, trace=trace,
+                  start=list(a1=guess[[5]], a2=guess[[6]], a3=guess[[7]]), data=df, trace=trace,
                  control = ctrl, lower = c(0,0,0), upper = c(1,1,100))
   coeff2 = model2$coefficients
   r2 = model2$ssquares

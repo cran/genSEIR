@@ -27,7 +27,7 @@ getKappaFun(
 
 \item{D}{target time-histories of the dead cases}
 
-\item{guess}{Initiail guess parameters for kappa}
+\item{guess}{initial guess parameters for kappa}
 
 \item{ftol}{nls.lm.control object. non-negative numeric. Default is \code{1e-6}}
 

@@ -10,11 +10,14 @@
 #' @param E0 initial number of exposed cases
 #' @param I0 initial number of predicted infectious cases
 #' @param time a time vector
+#' @param alpha type I error rate, default is 0.05
 #' @param dt the time step. This oversamples time to ensure that the algorithm converges
 #' @param guess initial guess parameters
 #' @param ftol nls.lm.control object. non-negative numeric. Default is \code{1e-6}
 #' @param ptol nls.lm.control object. non-negative numeric. Default is \code{1e-6}
 #' @param gtol nls.lm.control object. non-negative numeric. Default is \code{1e-6}
+#' @param diag nls.lm.control object. a list or numeric vector containing positive
+#' entries that serve as multiplicative scale factors for the parameters.
 #' @param epsfcn nls.lm.control object. Default is \code{0.001}
 #' @param factor nls.lm.control object. Default is \code{100}
 #' @param maxfev nls.lm.control object. Default is \code{1000}
@@ -63,12 +66,16 @@
 #'   lambda_guess = c(0.01,0.001,10)
 #'   kappa_guess = c(0.001,0.001,10)
 #'
-#'   guess = c(alpha_guess,
+#'guess = list(alpha_guess,
 #'             beta_guess,
 #'             1/LT_guess,
 #'             Q_guess,
-#'             lambda_guess,
-#'             kappa_guess)
+#'             lambda_guess[1],
+#'             lambda_guess[2],
+#'             lambda_guess[3],
+#'             kappa_guess[1],
+#'             kappa_guess[2],
+#'             kappa_guess[3])
 #'
 #'  Q0 = confirmed[1]-recovered[1]-deaths[1]
 #'  I0 = 0.3*Q0
@@ -86,18 +93,18 @@
 #'  time = seq(as.Date(start, format = "%m/%d/%y"), as.Date(finish, format = "%m/%d/%y"), by = "1 day")
 #'
 #'  params = fit_SEIQRDP(Q = Active, R = recovered, D = deaths, Npop = Npop, E0 = E0, I0 = I0,
-#'                         time = time, dt = dt, guess = guess, ftol = 1e-6, ptol = 1e-6, gtol = 1e-6,
-#'                         epsfcn = 0.001, factor = 100, maxfev = 1000,maxiter = 100, nprint = 1,
-#'                         trace = TRUE)
+#'                         time = time, alpha = 0.05, dt = dt, guess = guess, ftol = 1e-6,
+#'                         ptol = 1e-6, gtol = 1e-6, epsfcn = 0.001, factor = 100, maxfev = 1000,
+#'                         maxiter = 100, nprint = 1, trace = TRUE)
 #'}
-#' @seealso \code{\link{SEIQRDP}} \code{\link{fit_SEIQRDP}}
+#' @seealso \code{\link{SEIQRDP}} \code{\link{predict_SEIQRDP}}
 #'
 #' @references Peng, L., Yang, W., Zhang, D., Zhuge, C., Hong, L. 2020. “Epidemic analysis of COVID-19 in China by dynamical modeling”, arXiv preprint arXiv:2002.06563.
 #' @references \url{https://www.mathworks.com/matlabcentral/fileexchange/74545-generalized-seir-epidemic-model-fitting-and-computation}
 
-fit_SEIQRDP <- function(Q, R, D, Npop, E0, I0, time, dt = 1/24, guess, ftol = 1e-6,
-                        ptol = 1e-6, gtol = 1e-6, epsfcn = 0.001, factor = 100, maxfev = 1000,
-                        maxiter = 100, nprint = 1, trace = TRUE, ...){
+fit_SEIQRDP <- function(Q, R, D, Npop, E0, I0, time, alpha = 0.05, dt = 1/24, guess, ftol = sqrt(.Machine$double.eps),
+                        ptol = sqrt(.Machine$double.eps), gtol = 0, diag = list(), epsfcn = 0,
+                        factor = 100, maxfev = integer(), maxiter = 1000, nprint = 1, trace = TRUE, ...){
 
   Q[Q<0] <- 0
   R[R<0] <- 0
@@ -138,8 +145,8 @@ fit_SEIQRDP <- function(Q, R, D, Npop, E0, I0, time, dt = 1/24, guess, ftol = 1e
   modelFun1 = SEIQRDP_for_fitting
 
   if (is.null(R)){
-    kappaMax = guess[8:10]*1.05
-    kappaMin = guess[8:10]*0.95
+    kappaMax = c(guess[[8]],guess[[9]],guess[[10]])*1.05
+    kappaMin = c(guess[[8]],guess[[9]],guess[[10]])*0.95
     lambdaMax = c(1, 1, 100)
     lambdaMin = c(0, 0, 0)
 
@@ -149,10 +156,10 @@ fit_SEIQRDP <- function(Q, R, D, Npop, E0, I0, time, dt = 1/24, guess, ftol = 1e
     }
 
   }else{
-    kappaMax = guess[8:10]*2.0
-    kappaMin = guess[8:10]/2.0
-    lambdaMax = guess[5:7]*2.0
-    lambdaMin = guess[5:7]/2.0
+    kappaMax = c(guess[[8]],guess[[9]],guess[[10]])*2.0
+    kappaMin = c(guess[[8]],guess[[9]],guess[[10]])/2.0
+    lambdaMax = c(guess[[5]],guess[[6]],guess[[7]])*2.0
+    lambdaMin = c(guess[[5]],guess[[6]],guess[[7]])/2.0
 
     if (kappaMax[3]<1e-1){
       kappaMax[3] = 20
@@ -175,22 +182,32 @@ fit_SEIQRDP <- function(Q, R, D, Npop, E0, I0, time, dt = 1/24, guess, ftol = 1e
                         ptol = ptol, gtol = gtol, diag = list(), epsfcn = epsfcn,
                         factor = factor, maxfev = maxfev, maxiter = maxiter, nprint = nprint)
 
-  func <- function(p, obs, t11,  t00) {obs - SEIQRDP_for_fitting(p, t11,  t00)}
+  func <- function(p, obs, t11,  t00) {obs - SEIQRDP_for_fitting(p, t11,  t00, Npop, E0, I0, Q, R, D, dt)}
 
   nls.out <- nls.lm(par=guess, fn = func,  t11 = t,
                     t00=tTarget, obs =data.matrix(df),
                     lower = lb, upper = ub, control = ctrl)
 
+
+
   Coeff = nls.out$par
 
-  alpha1 = abs(Coeff[1])
-  beta1 = abs(Coeff[2])
-  gamma1 = abs(Coeff[3])
-  delta1 = abs(Coeff[4])
-  Lambda1 = abs(Coeff[5:7])
-  Kappa1 = abs(Coeff[8:10])
+  alpha1 = abs(Coeff[[1]])
+  beta1 = abs(Coeff[[2]])
+  gamma1 = abs(Coeff[[3]])
+  delta1 = abs(Coeff[[4]])
+  # Lambda1 = abs(Coeff[5:7])
+  lambda01 = abs(Coeff[[5]])
+  lambda02 = abs(Coeff[[6]])
+  lambda03 = abs(Coeff[[7]])
+  # Kappa1 = abs(Coeff[8:10])
+  kappa01 = abs(Coeff[[8]])
+  kappa02 = abs(Coeff[[9]])
+  kappa03 = abs(Coeff[[10]])
 
-  return(list(alpha1=alpha1,beta1=beta1,gamma1=gamma1,delta1=delta1,
-              Lambda1=Lambda1,Kappa1=Kappa1,lambdaFun=lambdaFun,kappaFun=kappaFun))
+    return(list(alpha1=alpha1, beta1=beta1, gamma1=gamma1, delta1=delta1,
+              lambda01=lambda01, lambda02=lambda02, lambda03=lambda03,
+              kappa01=kappa01, kappa02=kappa02, kappa03=kappa03,
+              lambdaFun=lambdaFun,kappaFun=kappaFun))
 
 }

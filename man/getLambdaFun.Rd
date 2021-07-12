@@ -2,7 +2,7 @@
 % Please edit documentation in R/getLambdaFun.R
 \name{getLambdaFun}
 \alias{getLambdaFun}
-\title{Estimate Death Rate}
+\title{Estimate Recovery Rate}
 \usage{
 getLambdaFun(
   tTarget,
@@ -27,7 +27,7 @@ getLambdaFun(
 
 \item{R}{target time-histories of the recovered cases}
 
-\item{guess}{Initiail guess parameters for kappa}
+\item{guess}{initial guess parameters for kappa}
 
 \item{ftol}{nls.lm.control object. non-negative numeric. Default is \code{1e-6}}
 
@@ -51,7 +51,7 @@ getLambdaFun(
 vector of estimation and optimization function for the recovery rate
 }
 \description{
-This function provides a first estimate of the  recovery rate, to faciliate
+This function provides a first estimate of the recovery rate, to faciliate
 convergence of the main algorithm.
 }
 \references{

@@ -6,7 +6,7 @@
 #' @param tTarget time vector
 #' @param Q target time-histories of the quarantined cases
 #' @param D target time-histories of the dead cases
-#' @param guess Initiail guess parameters for kappa
+#' @param guess initial guess parameters for kappa
 #' @param ftol nls.lm.control object. non-negative numeric. Default is \code{1e-6}
 #' @param ptol nls.lm.control object. non-negative numeric. Default is \code{1e-6}
 #' @param gtol nls.lm.control object. non-negative numeric. Default is \code{1e-6}
@@ -53,14 +53,14 @@ getKappaFun <- function(tTarget, Q, D, guess, ftol,
 
     df = cbind.data.frame(tk = x[!is.na(rate)], z = rate[!is.na(rate)])
 
-    ctrl = nls.lm.control(ftol = ftol,
-                          ptol = ptol, gtol = gtol, diag = list(), epsfcn = epsfcn,
-                          factor = factor, maxfev = maxfev, maxiter = maxiter, nprint = nprint)
+    # ctrl = nls.lm.control(ftol = ftol,
+    #                       ptol = ptol, gtol = gtol, diag = list(), epsfcn = epsfcn,
+    #                       factor = factor, maxfev = maxfev, maxiter = maxiter, nprint = nprint)
 
 
-    ctrl = list(phi=1, lamda = 0.0087, offset = 100, laminc=10, lamdec = 4)
+    ctrl = list(phi=1, lamda = 0.0001, offset = 100, laminc=10, lamdec = 4)
     lsqCurveFit1 <- nlxb(z ~ (a1 / (exp(a2*(tk-a3)) + exp(-a2*(tk-a3)))),
-                          start=c(a1=guess[8], a2=guess[9], a3=guess[10]), data=df, trace= trace,
+                          start=c(a1=guess[[8]], a2=guess[[9]], a3=guess[[10]]), data=df, trace= trace,
                           control = ctrl, lower = c(0,0,0), upper = c(1,1,100))
 
 
@@ -68,17 +68,17 @@ getKappaFun <- function(tTarget, Q, D, guess, ftol,
     r1 = lsqCurveFit1$ssquares
 
 
-    ctrl = list(phi=1, lamda = 0.0087, offset = 100, laminc=10, lamdec = 4)
+    ctrl = list(phi=1, lamda = 0.0001, offset = 100, laminc=10, lamdec = 4)
 
     lsqCurveFit2 <- nlxb(z ~ a1*exp(-(a2*(tk-a3))^2),
-                          start=list(a1=guess[8], a2=guess[9], a3=guess[10]), data=df, trace=trace,
+                          start=list(a1=guess[[8]], a2=guess[[9]], a3=guess[[10]]), data=df, trace=trace,
                           control = ctrl, lower = c(0,0,0), upper = c(1,1,100))
     coeff2 = lsqCurveFit2$coefficients
     r2 = lsqCurveFit2$ssquares
 
 
     lsqCurveFit3 <- nlxb(z ~ a1 + exp(-a2*(tk+a3)),
-                          start=list(a1=guess[8], a2=guess[9], a3=guess[10]), data=df, trace=trace,
+                          start=list(a1=guess[[8]], a2=guess[[9]], a3=guess[[10]]), data=df, trace=trace,
                          control = ctrl, lower = c(0,0,0), upper = c(1,1,100))
 
     coeff3 = lsqCurveFit3$coefficients

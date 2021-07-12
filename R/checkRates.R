@@ -1,6 +1,6 @@
 #' Check Rates
 #'
-#' This function compares the fitted and calcualted death and recovered ratios.
+#' This function compares the fitted and calculated death and recovered ratios.
 #' The idea is to check whether the approximation of these ratios is appropriate.
 
 #' @param time time vector
@@ -25,7 +25,7 @@
 #' @references \url{https://www.mathworks.com/matlabcentral/fileexchange/74545-generalized-seir-epidemic-model-fitting-and-computation}
 
 checkRates <- function(time, Q, R, D, kappaFun, lambdaFun, kappa,
-                       lambda, dt = 1/24){
+                       lambda, dt = 1){
 
     Q = as.numeric(Q)
     R = as.numeric(R)
